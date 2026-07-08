@@ -27,6 +27,36 @@ function getGeminiClient(): GoogleGenAI {
   return aiClient;
 }
 
+function isRetryableError(error: any): boolean {
+  const status = error?.status ?? error?.response?.status;
+  return status === 503 || status === 429;
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function generateContentWithRetry(
+  ai: GoogleGenAI,
+  params: Parameters<GoogleGenAI["models"]["generateContent"]>[0],
+  maxRetries = 4
+) {
+  let lastError: any;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await ai.models.generateContent(params);
+    } catch (error: any) {
+      lastError = error;
+      if (attempt === maxRetries || !isRetryableError(error)) {
+        throw error;
+      }
+      // Exponential backoff with jitter: ~1s, 2s, 4s, 8s
+      const delay = 2 ** attempt * 1000 + Math.random() * 300;
+      console.warn(`Gemini request failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${Math.round(delay)}ms...`);
+      await sleep(delay);
+    }
+  }
+  throw lastError;
+}
+
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -87,7 +117,7 @@ async function startServer() {
         });
       }
 
-      const response = await ai.models.generateContent({
+      const response = await generateContentWithRetry(ai, {
         model: "gemini-3.5-flash",
         contents: { parts },
         config: {
@@ -130,6 +160,11 @@ async function startServer() {
       res.json(parsedData);
     } catch (error: any) {
       console.error("Statement parsing error:", error);
+      if (isRetryableError(error)) {
+        return res.status(503).json({
+          error: "Gemini AI is currently experiencing high demand. We retried automatically but it's still unavailable — please try again in a minute."
+        });
+      }
       res.status(500).json({
         error: error.message || "An unexpected error occurred while parsing the bank statement."
       });
