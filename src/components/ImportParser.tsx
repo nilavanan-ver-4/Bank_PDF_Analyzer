@@ -122,9 +122,22 @@ export default function ImportParser({ onImportComplete }: Props) {
         body: JSON.stringify(payload),
       });
 
+      const isJson = response.headers.get("content-type")?.includes("application/json");
+
       if (!response.ok) {
+        if (!isJson) {
+          throw new Error(
+            response.status === 502 || response.status === 503
+              ? "The server is waking up or temporarily unavailable (common on free hosting tiers after inactivity). Please wait ~30 seconds and try again."
+              : `Server returned an unexpected error (status ${response.status}). Please try again.`
+          );
+        }
         const errData = await response.json();
         throw new Error(errData.error || "Failed to parse the document. Verify API keys or try again.");
+      }
+
+      if (!isJson) {
+        throw new Error("Server returned an unexpected response instead of data. Please try again in a moment.");
       }
 
       const result = await response.json();
