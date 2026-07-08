@@ -1,0 +1,6 @@
+{
+  "name": "Bank Statement CSV Converter",
+  "description": "Convert bank statements from images, PDFs, or text into polished CSV files. Search, edit, analyze, and export your transaction data with server-side Gemini intelligence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

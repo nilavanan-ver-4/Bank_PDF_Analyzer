@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@layer utilities {
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes loading-bar {
+    0% {
+      width: 0%;
+    }
+    50% {
+      width: 80%;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-loading-bar {
+    animation: loading-bar 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
