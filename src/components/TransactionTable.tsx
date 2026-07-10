@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 import { Transaction, StatementMetadata } from "../types";
 import {
   Search,
@@ -11,6 +12,7 @@ import {
   X,
   FileSpreadsheet,
   FileText,
+  Sheet,
   ArrowUpDown,
   SlidersHorizontal,
   ChevronLeft,
@@ -205,6 +207,47 @@ export default function TransactionTable({
     showToast("PDF file successfully generated and downloaded!");
   };
 
+  // Excel Generation Utility
+  const downloadExcel = () => {
+    const headers = ["Date", "Particulars/Description", "Reference No", "Debit (Withdrawal)", "Credit (Deposit)", "Balance"];
+    const rows = transactions.map((tx) => [
+      tx.date,
+      tx.description,
+      tx.reference || "",
+      tx.debit !== null ? tx.debit : "",
+      tx.credit !== null ? tx.credit : "",
+      tx.balance,
+    ]);
+
+    const sheetData: (string | number)[][] = [];
+    if (metadata) {
+      sheetData.push(["Account Holder", metadata.accountHolder]);
+      sheetData.push(["Account Number", metadata.accountNumber]);
+      sheetData.push(["Period", metadata.period]);
+      sheetData.push(["Opening Balance", metadata.openingBalance]);
+      sheetData.push(["Closing Balance", metadata.closingBalance]);
+      sheetData.push([]);
+    }
+    sheetData.push(headers);
+    sheetData.push(...rows);
+
+    const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+    worksheet["!cols"] = [
+      { wch: 12 },
+      { wch: 40 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 14 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+    XLSX.writeFile(workbook, `bank_statement_${new Date().toISOString().split("T")[0]}.xlsx`);
+
+    showToast("Excel file successfully generated and downloaded!");
+  };
+
   const showToast = (msg: string) => {
     setNotification(msg);
     setTimeout(() => {
@@ -393,6 +436,15 @@ export default function TransactionTable({
           >
             <FileText className="h-4 w-4" />
             Export PDF
+          </button>
+
+          {/* Export Excel button */}
+          <button
+            onClick={downloadExcel}
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-sm"
+          >
+            <Sheet className="h-4 w-4" />
+            Export Excel
           </button>
         </div>
       </div>

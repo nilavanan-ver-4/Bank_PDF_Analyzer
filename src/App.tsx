@@ -171,7 +171,7 @@ export default function App() {
                 <strong>Interactive Grid Features:</strong> Use the table tools to instantly search description parameters, filter down to deposits or withdrawals, and edit inline cell numbers with auto-balancing calculations!
               </li>
               <li>
-                <strong>One-Click Export:</strong> Click <span className="font-semibold text-white">Export CSV</span> to save as a standard comma-separated file, <span className="font-semibold text-white">Export PDF</span> to generate a formatted statement document, or <span className="font-semibold text-white">Copy CSV</span> to copy directly to your clipboard for instant Excel/Google Sheets pasting.
+                <strong>One-Click Export:</strong> Click <span className="font-semibold text-white">Export CSV</span> to save as a standard comma-separated file, <span className="font-semibold text-white">Export PDF</span> to generate a formatted statement document, <span className="font-semibold text-white">Export Excel</span> to save a native .xlsx workbook, or <span className="font-semibold text-white">Copy CSV</span> to copy directly to your clipboard for instant Excel/Google Sheets pasting.
               </li>
             </ul>
           </div>
